@@ -13,6 +13,9 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+#include "tuntap.h"
+#include <netinet/ether.h>
+#include <net/ethernet.h>
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
@@ -21,6 +24,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #if defined Linux
+# include <linux/if.h>
 # include <netinet/ether.h>
 # include <linux/if_tun.h>
 #else
@@ -40,7 +44,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "tuntap.h"
 
 int
 tuntap_start(struct device *dev, int mode, int tun) {
@@ -88,7 +91,6 @@ void
 tuntap_release(struct device *dev) {
 	(void)close(dev->tun_fd);
 	(void)close(dev->ctrl_sock);
-	free(dev);
 }
 
 int
@@ -325,6 +327,7 @@ tuntap_set_debug(struct device *dev, int set) {
 		return 0;
 	}
 
+  /*
 #if !defined Darwin
 	if (ioctl(dev->tun_fd, TUNSDEBUG, &set) == -1) {
 		switch(set) {
@@ -345,5 +348,6 @@ tuntap_set_debug(struct device *dev, int set) {
 	    "Your system does not support tuntap_set_debug()");
 	return -1;
 #endif
+  */
 }
 

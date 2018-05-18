@@ -13,6 +13,9 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+#include "tuntap.h"
+#include <netinet/ether.h>
+#include <net/ethernet.h>
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
@@ -22,7 +25,7 @@
 #include <arpa/inet.h>
 #include <linux/if.h>
 #include <linux/if_tun.h>
-#include <netinet/if_ether.h>
+#include <linux/if_ether.h>
 #include <net/if_arp.h>
 
 #include <fcntl.h>
@@ -32,7 +35,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "tuntap.h"
 
 int
 tuntap_sys_start(struct device *dev, int mode, int tun) {
@@ -53,7 +55,8 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	(void)memset(&ifr, '\0', sizeof ifr);
 	if (mode == TUNTAP_MODE_ETHERNET) {
 		ifr.ifr_flags = IFF_TAP;
-		ifname = "tap%i";
+		ifname = "ofdm0";
+		//ifname = "ofdm%i";
 	} else if (mode == TUNTAP_MODE_TUNNEL) {
 		ifr.ifr_flags = IFF_TUN;
 		ifname = "tun%i";
@@ -76,18 +79,18 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	}
 
 	/* Set the interface name, if any */
-	if (tun != TUNTAP_ID_ANY) {
-		if (fd > TUNTAP_ID_MAX) {
-			return -1;
-		}
+	//if (tun != TUNTAP_ID_ANY) {
+	//	if (fd > TUNTAP_ID_MAX) {
+	//		return -1;
+	//	}
 		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name,
 		    ifname, tun);
 		/* Save interface name *after* SIOCGIFFLAGS */
-	}
+	//}
 
 	/* Configure the interface */
-	if (ioctl(fd, TUNSETIFF, &ifr) == -1) {
-		tuntap_log(TUNTAP_LOG_ERR, "Can't set interface name");
+	if (ioctl(fd, TUNSETIFF , &ifr) == -1) {
+		fprintf(stderr, "\nCan't set interface name");
 		return -1;
 	}
 
@@ -105,6 +108,8 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	    	return -1;
 	}
 
+  tuntap_sys_set_ifname(dev, "ofdm0\0", 6);
+
 	/* Save flags for tuntap_{up, down} */
 	dev->flags = ifr.ifr_flags;
 
@@ -115,8 +120,8 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	if (mode == TUNTAP_MODE_ETHERNET) {
 		struct ifreq ifr_hw;
 
-		(void)memcpy(ifr_hw.ifr_name, dev->if_name,
-		    sizeof(dev->if_name));
+		(void)memcpy(ifr_hw.ifr_name, dev->if_name, sizeof(dev->if_name));
+
 		if (ioctl(fd, SIOCGIFHWADDR, &ifr_hw) == -1) {
 			tuntap_log(TUNTAP_LOG_WARN,
 			    "Can't get link-layer address");

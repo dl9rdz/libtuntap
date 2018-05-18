@@ -14,6 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#undef Windows
+#define Linux 1
+
 #include <sys/types.h>
 #if defined Windows
 # include <In6addr.h>
@@ -27,10 +30,11 @@
 # else
 #  include <net/if.h>
 # endif
-# include <netinet/in.h>
-# include <netinet/if_ether.h>
+//# include <linux/in.h>
 #endif
 
+#include <netinet/ether.h>
+#include <linux/if_ether.h>
 #include <stdint.h>
 
 #ifndef LIBTUNTAP_H_

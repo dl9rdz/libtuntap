@@ -32,21 +32,20 @@
 
 #include "tuntap.h"
 
-struct device *
-tuntap_init(void) {
-	struct device *dev = NULL;
+static struct device _dev;
 
-	if ((dev = (struct device *)malloc(sizeof(*dev))) == NULL)
-		return NULL;
+struct device * tuntap_init(void) {
 
-	(void)memset(dev->if_name, '\0', sizeof dev->if_name);
-	(void)memset(dev->hwaddr, '\0', sizeof dev->hwaddr);
+  struct device *dev = &_dev;
+
+	//(void)memset(dev->if_name, '\0', sizeof dev->if_name);
+	//(void)memset(dev->hwaddr, '\0', sizeof dev->hwaddr);
 	dev->tun_fd = TUNFD_INVALID_VALUE;
 	dev->ctrl_sock = -1;
 	dev->flags = 0;
 
 	tuntap_log = tuntap_log_default;
-	return dev;
+	return &_dev;
 }
 
 void
